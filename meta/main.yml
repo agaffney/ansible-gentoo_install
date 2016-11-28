@@ -1,0 +1,12 @@
+galaxy_info:
+  author: Andrew Gaffney
+  description: Performs an installation of Gentoo Linux against an InstallCD environment
+
+  license: BSD
+
+  min_ansible_version: 2.2
+
+  galaxy_tags:
+    - gentoo
+
+dependencies: []
