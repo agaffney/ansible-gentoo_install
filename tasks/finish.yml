@@ -1,0 +1,25 @@
+---
+- name: disable chroot wrapper
+  set_fact:
+    ansible_shell_executable: /bin/sh
+
+- name: unmount filesystems
+  mount:
+    name: /mnt/gentoo/{{ item }}
+    state: unmounted
+  with_items:
+    - proc
+    - sys
+    - dev/pts
+    - dev/shm
+    - dev
+    - boot
+    - ''
+  loop_control:
+    label: "/mnt/gentoo/{{ item }}"
+
+- name: reboot
+  command: reboot
+  async: 0
+  poll: 0
+  ignore_errors: true

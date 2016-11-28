@@ -1,0 +1,36 @@
+---
+- name: install syslog daemon
+  portage:
+    package: "{{ gentoo_install_syslog_daemon }}"
+    state: installed
+
+- name: start syslog daemon at boot
+  service:
+    name: "{{ gentoo_install_syslog_daemon.split('/')[1] }}"
+    enabled: true
+
+- name: install logrotate
+  portage:
+    package: app-admin/logrotate
+    state: installed
+
+- name: install cron daemon
+  portage:
+    package: "{{ gentoo_install_cron_daemon }}"
+    state: installed
+
+- name: start cron daemon at boot
+  service:
+    name: "{{ gentoo_install_cron_daemon.split('/')[1] }}"
+    enabled: true
+
+- name: configure sshd
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    line: 'PermitRootLogin yes'
+    regexp: '^PermitRootLogin'
+
+- name: start sshd at boot
+  service:
+    name: sshd
+    enabled: true

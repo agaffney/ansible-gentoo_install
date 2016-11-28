@@ -1,0 +1,51 @@
+---
+- name: check for mounted disk
+  shell: "grep '{{ gentoo_install_disk }}' /proc/mounts"
+  failed_when: false
+  changed_when: false
+  register: check_mounted_disk
+  check_mode: no
+
+- name: abort if disk mounted
+  fail:
+    msg: "Aborting install due to {{ gentoo_install_disk }} being mounted"
+  when: check_mounted_disk.rc == 0
+
+- name: create disklabel
+  command: parted -s {{ gentoo_install_disk }} mklabel {{ gentoo_install_disklabel }}
+
+# We need to leave a small gap at the beginning of the disk, or grub won't be
+# able to install to the MBR
+- name: create boot partition
+  command: parted -s {{ gentoo_install_disk }} mkpart primary ext2 1M 200M
+
+- name: mark boot partition as active
+  command: parted -s {{ gentoo_install_disk }} set 1 boot on
+
+- name: create root partition
+  command: parted -s {{ gentoo_install_disk }} -- mkpart primary ext4 200M -1s
+
+- name: format boot partition
+  filesystem: dev={{ gentoo_install_disk }}1 fstype=ext2 force=yes
+
+- name: format root partition
+  filesystem: dev={{ gentoo_install_disk }}2 fstype=ext4 force=yes
+
+- name: mount root partition
+  mount:
+    name: /mnt/gentoo
+    src: "{{ gentoo_install_disk }}2"
+    fstype: ext4
+    state: mounted
+
+- name: create /boot mountpoint
+  file:
+    path: /mnt/gentoo/boot
+    state: directory
+
+- name: mount boot partition
+  mount:
+    name: /mnt/gentoo/boot
+    src: "{{ gentoo_install_disk }}1"
+    fstype: ext2
+    state: mounted

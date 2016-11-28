@@ -1,0 +1,11 @@
+---
+- include: disk.yml
+- include: tarball.yml
+- include: chroot.yml
+- include: portage.yml
+- include: misc.yml
+- include: kernel.yml
+- include: network.yml
+- include: daemons.yml
+- include: bootloader.yml
+- include: finish.yml

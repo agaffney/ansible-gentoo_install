@@ -1,0 +1,15 @@
+---
+- name: install grub
+  portage:
+    package: sys-boot/grub:2
+    state: installed
+
+- name: install grub to MBR
+  command: grub-install {{ gentoo_install_disk }}
+  args:
+    creates: /boot/grub
+
+- name: generate grub config
+  shell: grub-mkconfig -o /boot/grub/grub.cfg
+  args:
+    creates: /boot/grub/grub.cfg

@@ -1,0 +1,26 @@
+---
+gentoo_install_disk: /dev/sda
+gentoo_install_disklabel: msdos
+gentoo_install_baseurl: "http://distfiles.gentoo.org/releases/amd64/autobuilds/"
+gentoo_install_latest_stage_pointer: "latest-stage3-amd64.txt"
+gentoo_install_portage_makeconf_default:
+  MAKEOPTS: "-j{{ ansible_processor_vcpus | default(2) }}"
+  USE: "-X"
+  CFLAGS: "-march=native -O2 -pipe"
+gentoo_install_portage_conf_files:
+  'package.accept_keywords': |
+    =sys-kernel/genkernel-3.5* ~amd64
+gentoo_install_timezone: America/Denver
+gentoo_install_locales:
+  - en_US ISO-8859-1
+  - en_US.UTF-8 UTF-8
+gentoo_install_locale_default: en_US.utf8
+gentoo_install_hostname: localhost
+gentoo_install_network_interfaces:
+  enp0s3:
+    config: dhcp
+  ens3:
+    config: dhcp
+gentoo_install_root_password: password
+gentoo_install_syslog_daemon: app-admin/sysklogd
+gentoo_install_cron_daemon: sys-process/cronie

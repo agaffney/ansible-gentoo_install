@@ -1,0 +1,46 @@
+---
+- name: configure hostname
+  lineinfile:
+    dest: /etc/conf.d/hostname
+    line: 'hostname="{{ gentoo_install_hostname }}"'
+    regexp: '^hostname='
+
+- name: install netifrc
+  portage:
+    package: net-misc/netifrc
+    state: installed
+
+- name: install DHCP client
+  portage:
+    package: net-misc/dhcpcd
+    state: installed
+
+- name: configure network interfaces
+  lineinfile:
+    dest: /etc/conf.d/net
+    create: yes
+    owner: root
+    mode: '0644'
+    line: 'config_{{ item.key }}="{{ item.value.config }}"'
+    regexp: '^config_{{ item.key }}='
+  with_dict: "{{ gentoo_install_network_interfaces }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: create network interface init symlink
+  file:
+    path: /etc/init.d/net.{{ item.key }}
+    src: net.lo
+    force: yes
+    state: link
+  with_dict: "{{ gentoo_install_network_interfaces }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: start network interface at boot
+  service:
+    name: net.{{ item.key }}
+    enabled: true
+  with_dict: "{{ gentoo_install_network_interfaces }}"
+  loop_control:
+    label: "{{ item.key }}"

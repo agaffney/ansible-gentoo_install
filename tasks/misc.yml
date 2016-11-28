@@ -1,0 +1,52 @@
+---
+- name: configure timezone
+  lineinfile:
+    dest: /etc/timezone
+    line: "{{ gentoo_install_timezone }}"
+    regexp: '^'
+    create: yes
+    owner: root
+    mode: '0644'
+
+- name: timezone symlink
+  file:
+    dest: /etc/localtime
+    src: /usr/share/zoneinfo/{{ gentoo_install_timezone }}
+    state: link
+    force: yes
+
+- name: configure locales
+  lineinfile:
+    dest: /etc/locale.gen
+    line: "{{ item }}"
+  with_items: "{{ gentoo_install_locales }}"
+
+- name: generate locales
+  command: locale-gen
+
+- name: set default locale
+  command: eselect locale set {{ gentoo_install_locale_default }}
+
+- name: configure root mount
+  mount:
+    name: /
+    src: "{{ gentoo_install_disk }}2"
+    fstype: ext4
+    state: present
+    opts: noatime
+    passno: 1
+
+- name: configure boot mountpoint
+  mount:
+    name: /boot
+    src: "{{ gentoo_install_disk }}1"
+    fstype: ext2
+    state: present
+    opts: noatime,ro
+    dump: 1
+    passno: 2
+
+- name: set root password
+  user:
+    name: root
+    password: "{{ gentoo_install_root_password | password_hash('sha512') }}"

@@ -1,0 +1,34 @@
+---
+- name: portage make.conf settings
+  lineinfile:
+    dest: /etc/portage/make.conf
+    line: '{{ item.key }}="{{ item.value }}"'
+    regexp: '^{{ item.key }}='
+  with_dict: "{{ gentoo_install_portage_makeconf_default | combine( gentoo_install_portage_makeconf | default({}) ) }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+# Using blockinfile as a workaround to 'copy' not working with the chroot hack
+- name: other portage config files
+  blockinfile:
+    dest: /etc/portage/{{ item.key }}
+    content: "{{ item.value }}"
+    owner: root
+    mode: '0644'
+    create: yes
+  with_dict: "{{ gentoo_install_portage_conf_files | default({}) }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: install portage tree snapshot
+  command: emerge-webrsync
+
+#- name: update portage tree
+#  command: emerge --sync
+
+# The 'portage' module doesn't work without the 'equery' command available,
+# which is provided by the gentoolkit package
+- name: install gentoolkit package
+  command: emerge app-portage/gentoolkit
+  args:
+    creates: /var/db/pkg/app-portage/gentoolkit-*

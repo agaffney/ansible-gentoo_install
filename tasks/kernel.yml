@@ -1,0 +1,19 @@
+---
+- name: install kernel sources
+  portage:
+    package: gentoo-sources
+    state: installed
+
+- name: install genkernel
+  portage:
+    package: sys-kernel/genkernel
+    state: installed
+
+- name: build kernel
+  environment:
+    # The install guide implies that the kernel build will get angry without
+    # the locale set
+    LOCALE: "{{ gentoo_install_locale_default }}"
+  command: genkernel --virtio all
+  args:
+    creates: /boot/kernel-genkernel-*

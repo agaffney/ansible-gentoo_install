@@ -1,0 +1,38 @@
+---
+- name: chroot wrapper script
+  copy:
+    dest: /root/chroot_wrapper.sh
+    src: files/chroot_wrapper.sh
+    owner: 'root'
+    mode: '0755'
+
+- name: copy resolv.conf into chroot
+  copy:
+    src: /etc/resolv.conf
+    dest: /mnt/gentoo/etc/resolv.conf
+    remote_src: yes
+
+- name: mount /proc in chroot
+  mount:
+    name: /mnt/gentoo/proc
+    src: proc
+    fstype: proc
+    state: mounted
+
+- name: bind-mount dirs in chroot
+  mount:
+    name: /mnt/gentoo/{{ item }}
+    src: /{{ item }}
+    fstype: auto
+    opts: bind
+    state: mounted
+  with_items:
+    - sys
+    - dev
+    - dev/pts
+    - dev/shm
+
+- name: enable chroot wrapper
+  set_fact:
+    ansible_shell_executable: /root/chroot_wrapper.sh
+

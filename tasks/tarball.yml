@@ -1,0 +1,23 @@
+---
+- name: determine latest stage tarball
+  uri:
+    url: "{{ gentoo_install_baseurl }}{{ gentoo_install_latest_stage_pointer }}"
+    return_content: yes
+  register: latest_stage
+
+- set_fact:
+    latest_stage_tarball_url_suffix: "{{ ( latest_stage.content.splitlines() | reject('match', '#') | first ).split(' ')[0] }}"
+    latest_stage_tarball: "{{ ( latest_stage.content.splitlines() | reject('match', '#') | first ).split(' ')[0].split('/')[1] }}"
+
+- name: fetch latest stage tarball
+  get_url:
+    url: "{{ gentoo_install_baseurl }}{{ latest_stage_tarball_url_suffix }}"
+    dest: /mnt/gentoo/{{ latest_stage_tarball }}
+    tmp_dest: /mnt/gentoo
+
+- name: extract stage tarball
+  command: "tar xvjpf {{ latest_stage_tarball }} --xattrs"
+  args:
+    warn: no
+    chdir: /mnt/gentoo
+    creates: /mnt/gentoo/var
