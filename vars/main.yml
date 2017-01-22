@@ -1,0 +1,15 @@
+---
+# Enable SSH pipelining
+# The normal transfer methods (scp/sftp) do not work with the chroot wrapper
+# hack, so we need to make sure that they are not needed for running modules
+# inside the chroot by enabling pipelining.
+ansible_ssh_pipelining: yes
+
+# Use 'piped' SSH transfer method
+# For the reason noted above, file transfers using scp/sftp do not work, so
+# we force the use of the new 'piped' transfer method. This feature is not
+# available until Ansible 2.3, but neither is the following config option, so
+# this will be a no-op on older versions.
+# This role does not actually require this (yet), but it would be nice to use
+# the 'copy' module in the future.
+ansible_ssh_transfer_method: piped
